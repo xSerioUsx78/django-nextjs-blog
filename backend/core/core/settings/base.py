@@ -25,7 +25,6 @@ FRONTEND_DIR = os.path.join(BASE_DIR.parent, 'frontend')
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "Your secret key"
 
-
 # Application definition
 
 INSTALLED_APPS = [

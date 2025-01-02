@@ -1,9 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
-
 const NavBar = () => {
-
   const router = useRouter();
 
   return (
@@ -12,31 +10,37 @@ const NavBar = () => {
         <div className="flex items-center">
           <h1 className="text-xl">
             <Link href="/">
-              <a className="text-blue-400 font-bold uppercase">Simple next js blog</a>
+              <span className="text-blue-400 font-bold uppercase">Simple next js blog</span>
             </Link>
           </h1>
           <div className="flex items-center ml-9">
             <Link href="/">
-              <a className={
-              `hover:text-blue-400
-              text-sm
-              font-bold px-3 
-              transition 
-              duration-200
-              uppercase
-              ${router.pathname === "/" ? "text-blue-400" : "text-gray-400"}`}>
+              <span
+                className={`
+                  hover:text-blue-400
+                  text-sm
+                  font-bold px-3
+                  transition
+                  duration-200
+                  uppercase
+                  ${router.pathname === "/" ? "text-blue-400" : "text-gray-400"}`}
+              >
                 Home
-              </a>
+              </span>
             </Link>
             <Link href="/about">
-              <a className={
-              `hover:text-blue-400 
-              text-sm
-              font-bold px-3 
-              transition 
-              duration-200
-              uppercase
-              ${router.pathname === "/about" ? "text-blue-400" : "text-gray-400"}`}>About</a>
+              <span
+                className={`
+                  hover:text-blue-400
+                  text-sm
+                  font-bold px-3
+                  transition
+                  duration-200
+                  uppercase
+                  ${router.pathname === "/about" ? "text-blue-400" : "text-gray-400"}`}
+              >
+                About
+              </span>
             </Link>
           </div>
         </div>
@@ -44,5 +48,5 @@ const NavBar = () => {
     </nav>
   );
 }
- 
+
 export default NavBar;

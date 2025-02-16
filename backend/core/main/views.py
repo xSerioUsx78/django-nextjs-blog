@@ -1,58 +1,57 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Post
 from .serializers import PostSerializer
 
-# Get all posts
+
 @api_view(['GET'])
-def get_posts(request):
-    posts = Post.objects.all()
-    serializer = PostSerializer(posts, many=True)
+def post_list_view(request):
+    queryset = Post.objects.all()
+
+    serializer = PostSerializer(queryset, many=True)
+
     return Response(serializer.data)
 
-# Get a single post by id
+
 @api_view(['GET'])
-def get_post(request, pk):
-    try:
-        post = Post.objects.get(pk=pk)
-    except Post.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    
+def post_detail_view(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+
     serializer = PostSerializer(post)
+
     return Response(serializer.data)
 
-# Create a new post
+
 @api_view(['POST'])
-def create_post(request):
-    if request.method == 'POST':
-        serializer = PostSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+def post_create_view(request):
+    serializer = PostSerializer(data=request.data)
 
-# Update an existing post
-@api_view(['PUT'])
-def update_post(request, pk):
-    try:
-        post = Post.objects.get(pk=pk)
-    except Post.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    
-    serializer = PostSerializer(post, data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
 
-# Delete a post
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['PUT', 'PATCH'])
+def post_update_view(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+
+    partial = request.method == 'PATCH'
+    serializer = PostSerializer(
+        post,
+        data=request.data,
+        partial=partial
+    )
+
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+
+    return Response(serializer.data)
+
+
 @api_view(['DELETE'])
-def delete_post(request, pk):
-    try:
-        post = Post.objects.get(pk=pk)
-    except Post.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    
-    post.delete()
+def post_delete_view(request, pk):
+    Post.objects.filter(pk=pk).delete()
     return Response(status=status.HTTP_204_NO_CONTENT)

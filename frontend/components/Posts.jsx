@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';  // For URL routing and params
+import { useRouter } from 'next/router';
+import axios from 'axios';  // Import Axios
 
 const Posts = () => {
   const [posts, setPosts] = useState([]);
@@ -8,28 +9,27 @@ const Posts = () => {
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
-  const [singlePost, setSinglePost] = useState(null);  // For holding the single post data
+  const [singlePost, setSinglePost] = useState(null);
 
-  const router = useRouter();  // Hook to manage the router
+  const router = useRouter();
 
   useEffect(() => {
-    // Fetch all posts initially
-    fetch('http://127.0.0.1:8000/posts/posts/')
-      .then((res) => res.json())
-      .then((data) => setPosts(data))
+    // Fetch all posts initially using Axios
+    axios
+      .get('http://127.0.0.1:8000/posts/posts/')
+      .then((response) => setPosts(response.data))
       .catch((err) => alert('Error fetching posts'));
 
-    // If an ID is present in the URL (e.g., for single post), fetch that post
+    // If an ID is present in the URL, fetch the single post
     if (router.query.id) {
       fetchSinglePost(router.query.id);
     }
-  }, [router.query.id]);  // Dependency on router.query.id so it re-fetches when the ID changes
+  }, [router.query.id]);
 
   const fetchSinglePost = async (id) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/posts/posts/${id}/`);
-      const data = await res.json();
-      setSinglePost(data);
+      const response = await axios.get(`http://127.0.0.1:8000/posts/posts/${id}/`);
+      setSinglePost(response.data);
     } catch (err) {
       alert('Error fetching single post');
     }
@@ -43,16 +43,13 @@ const Posts = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/posts/posts/', {
-        method: 'POST',
-        body: JSON.stringify(newPost),
+      const response = await axios.post('http://127.0.0.1:8000/posts/posts/', newPost, {
         headers: { 'Content-Type': 'application/json' },
       });
-      const createdPost = await response.json();
-      setPosts([createdPost, ...posts]);
+      setPosts([response.data, ...posts]);
       setNewPost({ title: '', content: '' });
       setShowSuccessAlert(true);
-      setTimeout(() => setShowSuccessAlert(false), 3000); // Alert hides after 3 seconds
+      setTimeout(() => setShowSuccessAlert(false), 3000);
     } catch (error) {
       alert('Error adding post');
     } finally {
@@ -62,9 +59,7 @@ const Posts = () => {
 
   const handleDelete = async () => {
     try {
-      await fetch(`http://127.0.0.1:8000/posts/posts/${postToDelete}/`, {
-        method: 'DELETE',
-      });
+      await axios.delete(`http://127.0.0.1:8000/posts/posts/${postToDelete}/`);
       setPosts(posts.filter((post) => post.id !== postToDelete));
       setPostToDelete(null);
       setShowDeleteModal(false);
@@ -88,28 +83,28 @@ const Posts = () => {
 
       {/* Add New Post */}
       <div className="mb-6 p-4 bg-gray-100 border border-gray-300 rounded-lg shadow-md max-w-lg mx-auto">
-  <h3 className="text-xl font-semibold mb-4">Add a New Post</h3>
-  <input
-    type="text"
-    placeholder="Post Title"
-    value={newPost.title}
-    onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-    className="border p-2 w-full mb-4 rounded-lg bg-gray-700 text-gray-200 font-bold placeholder-gray-400"
-  />
-  <textarea
-    placeholder="Post Content"
-    value={newPost.content}
-    onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-    className="border p-2 w-full mb-4 rounded-lg bg-gray-700 text-gray-200 font-bold placeholder-gray-400"
-  />
-  <button
-    onClick={handleAddPost}
-    disabled={isLoading}
-    className="px-4 py-2 bg-transparent border border-green-500 text-green-500 rounded-full shadow hover:bg-green-500 hover:text-white transition-all"
-  >
-    {isLoading ? 'Adding...' : 'Add Post'}
-  </button>
-</div>
+        <h3 className="text-xl font-semibold mb-4">Add a New Post</h3>
+        <input
+          type="text"
+          placeholder="Post Title"
+          value={newPost.title}
+          onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+          className="border p-2 w-full mb-4 rounded-lg bg-gray-700 text-gray-200 font-bold placeholder-gray-400"
+        />
+        <textarea
+          placeholder="Post Content"
+          value={newPost.content}
+          onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+          className="border p-2 w-full mb-4 rounded-lg bg-gray-700 text-gray-200 font-bold placeholder-gray-400"
+        />
+        <button
+          onClick={handleAddPost}
+          disabled={isLoading}
+          className="px-4 py-2 bg-transparent border border-green-500 text-green-500 rounded-full shadow hover:bg-green-500 hover:text-white transition-all"
+        >
+          {isLoading ? 'Adding...' : 'Add Post'}
+        </button>
+      </div>
 
       {/* Display Posts */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
@@ -117,12 +112,11 @@ const Posts = () => {
           <div key={post.id} className="bg-white shadow-lg rounded-lg p-6 border border-gray-300 max-w-sm mx-auto">
             <h2 className="text-xl font-semibold text-blue-600 mb-4">{post.title}</h2>
             <p className="text-gray-700 mb-4">
-              {/* Check if post.content exists before slicing */}
-              {post.content ? post.content.slice(0, 150) : "No content available..."}...
+              {post.content ? post.content.slice(0, 150) : 'No content available...'}...
             </p>
             <div className="flex justify-between items-center">
               <button
-                onClick={() => router.push(`/posts/${post.id}`)}  // Use router.push to go to the dynamic URL
+                onClick={() => router.push(`/posts/${post.id}`)}
                 className="px-4 py-2 bg-transparent border border-blue-500 text-blue-500 rounded-full shadow hover:bg-blue-500 hover:text-white transition-all"
               >
                 View

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import axios from 'axios';  // Import Axios
+import axios from 'axios'; // Import Axios
+import { FaTrash, FaEye, FaPlus } from 'react-icons/fa'; // React Icons
+import { motion } from 'framer-motion'; // Framer Motion
 
 const Posts = () => {
   const [posts, setPosts] = useState([]);
@@ -10,13 +12,15 @@ const Posts = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
   const [singlePost, setSinglePost] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 10;
 
   const router = useRouter();
 
   useEffect(() => {
     // Fetch all posts initially using Axios
     axios
-      .get('http://127.0.0.1:8000/posts/posts/')
+      .get('http://127.0.0.1:8000/posts/api/posts/')
       .then((response) => setPosts(response.data))
       .catch((err) => alert('Error fetching posts'));
 
@@ -28,7 +32,7 @@ const Posts = () => {
 
   const fetchSinglePost = async (id) => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/posts/posts/${id}/`);
+      const response = await axios.get(`http://127.0.0.1:8000/posts/api/posts/${id}/`);
       setSinglePost(response.data);
     } catch (err) {
       alert('Error fetching single post');
@@ -43,7 +47,7 @@ const Posts = () => {
 
     setIsLoading(true);
     try {
-      const response = await axios.post('http://127.0.0.1:8000/posts/posts/', newPost, {
+      const response = await axios.post('http://127.0.0.1:8000/posts/api/posts/', newPost, {
         headers: { 'Content-Type': 'application/json' },
       });
       setPosts([response.data, ...posts]);
@@ -59,7 +63,7 @@ const Posts = () => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`http://127.0.0.1:8000/posts/posts/${postToDelete}/`);
+      await axios.delete(`http://127.0.0.1:8000/posts/api/posts/${postToDelete}/`);
       setPosts(posts.filter((post) => post.id !== postToDelete));
       setPostToDelete(null);
       setShowDeleteModal(false);
@@ -67,6 +71,16 @@ const Posts = () => {
       alert('Error deleting post');
     }
   };
+
+  // Logic for pagination
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const handlePrevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
+  const handleNextPage = () => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(posts.length / postsPerPage)));
 
   return (
     <>
@@ -77,62 +91,110 @@ const Posts = () => {
         </div>
       )}
 
-      <div className="mb-8 text-center">
-        <h2 className="text-3xl font-bold text-gray-900">Manage Posts</h2>
+      <div className="my-12 sm:my-16 md:my-20 text-center">
+        <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+          Manage Posts
+        </h2>
       </div>
 
       {/* Add New Post */}
-      <div className="mb-6 p-4 bg-gray-100 border border-gray-300 rounded-lg shadow-md max-w-lg mx-auto">
-        <h3 className="text-xl font-semibold mb-4">Add a New Post</h3>
-        <input
-          type="text"
-          placeholder="Post Title"
-          value={newPost.title}
-          onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-          className="border p-2 w-full mb-4 rounded-lg bg-gray-700 text-gray-200 font-bold placeholder-gray-400"
-        />
-        <textarea
-          placeholder="Post Content"
-          value={newPost.content}
-          onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-          className="border p-2 w-full mb-4 rounded-lg bg-gray-700 text-gray-200 font-bold placeholder-gray-400"
-        />
-        <button
+      <div className="mb-6 p-6 bg-white border w-full md:w-[70%] lg:w-[55%] border-gray-300 rounded-lg shadow-md mx-auto text-center">
+        <h3 className="text-2xl font-bold mb-6">Add a New Post</h3>
+
+        {/* Input Wrapper */}
+        <div className="w-full md:w-[70%] mx-auto">
+          <input
+            type="text"
+            placeholder="Post Title"
+            value={newPost.title}
+            onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+            className="border-2 p-3 w-full mb-4 rounded-lg bg-gray-100 text-gray-700 placeholder-gray-500 placeholder:text-lg placeholder:font-semibold focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:shadow-lg transition-all"
+          />
+          <textarea
+            placeholder="Post Content"
+            value={newPost.content}
+            onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+            className="border-2 p-3 w-full mb-4 rounded-lg bg-gray-100 text-gray-700 placeholder-gray-500 placeholder:text-lg placeholder:font-semibold focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:shadow-lg transition-all"
+          />
+        </div>
+
+        <motion.button
           onClick={handleAddPost}
           disabled={isLoading}
-          className="px-4 py-2 bg-transparent border border-green-500 text-green-500 rounded-full shadow hover:bg-green-500 hover:text-white transition-all"
+          className="px-6 py-3 bg-transparent border border-green-500 text-green-500 rounded-full shadow-md hover:bg-green-500 hover:text-white transition-all mt-4"
+          whileHover={{ scale: 1.02 }}
         >
-          {isLoading ? 'Adding...' : 'Add Post'}
-        </button>
+          {isLoading ? 'Adding...' : 'Add Post'} <FaPlus className="inline-block ml-2" />
+        </motion.button>
       </div>
 
       {/* Display Posts */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
-        {posts.map((post) => (
-          <div key={post.id} className="bg-white shadow-lg rounded-lg p-6 border border-gray-300 max-w-sm mx-auto">
-            <h2 className="text-xl font-semibold text-blue-600 mb-4">{post.title}</h2>
-            <p className="text-gray-700 mb-4">
+        {currentPosts.map((post) => (
+          <motion.div
+            key={post.id}
+            className="bg-slate-100 shadow-xl rounded-lg p-6 border border-gray-300 max-w-sm mx-auto"
+            whileHover={{ scale: 1.005 }}
+            transition={{ duration: 0.1 }}
+          >
+            <h2 className="text-xl font-bold text-slate-600 mb-4">{post.title}</h2>
+            <p className="text-slate-800 mb-4">
               {post.content ? post.content.slice(0, 150) : 'No content available...'}...
             </p>
             <div className="flex justify-between items-center">
-              <button
-                onClick={() => router.push(`/posts/${post.id}`)}
-                className="px-4 py-2 bg-transparent border border-blue-500 text-blue-500 rounded-full shadow hover:bg-blue-500 hover:text-white transition-all"
+              <motion.button
+                onClick={() => router.push(`/posts/${post.id}/`)}
+                className="px-4 py-2 bg-transparent border border-blue-500  rounded-md shadow-sm hover:shandow-md  transition-all"
+                
               >
-                View
-              </button>
-              <button
+                View 
+              </motion.button>
+              <motion.button
                 onClick={() => {
                   setPostToDelete(post.id);
                   setShowDeleteModal(true);
                 }}
-                className="px-4 py-2 bg-transparent border border-red-500 text-red-500 rounded-full shadow hover:bg-red-500 hover:text-white transition-all"
+                className="px-4 py-2 bg-transparent border border-black text-slate-900 rounded-md shadow-sm  hover:shandow-md transition-all"
               >
-                Delete
-              </button>
+                Delete 
+              </motion.button>
             </div>
-          </div>
+          </motion.div>
         ))}
+      </div>
+
+      {/* Pagination */}
+      <div className="flex justify-center mt-8">
+        {/* Previous Button */}
+        <button
+          onClick={handlePrevPage}
+          disabled={currentPage === 1}
+          className={`px-4 py-2 mx-1 border border-gray-300 rounded-full hover:bg-gray-200 ${currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-black'}`}
+        >
+          {'<<'}
+        </button>
+
+        {/* Page Number Buttons */}
+        {Array.from({ length: Math.ceil(posts.length / postsPerPage) }).map((_, index) => (
+          <button
+            key={index}
+            onClick={() => paginate(index + 1)}
+            className={`px-4 py-2 mx-1 border border-gray-300 rounded-full hover:bg-gray-200 ${
+              currentPage === index + 1 ? 'bg-blue-500 text-white' : 'text-black'
+            }`}
+          >
+            {index + 1}
+          </button>
+        ))}
+
+        {/* Next Button */}
+        <button
+          onClick={handleNextPage}
+          disabled={currentPage === Math.ceil(posts.length / postsPerPage)}
+          className={`px-4 py-2 mx-1 border border-gray-300 rounded-full hover:bg-gray-200 ${currentPage === Math.ceil(posts.length / postsPerPage) ? 'text-gray-400 cursor-not-allowed' : 'text-black'}`}
+        >
+          {'>>'}
+        </button>
       </div>
 
       {/* Delete Confirmation Modal */}
@@ -143,16 +205,17 @@ const Posts = () => {
             <div className="flex justify-end">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 bg-transparent border border-gray-500 text-gray-500 rounded-full shadow hover:bg-gray-500 hover:text-white transition-all mr-4"
+                className="px-4 py-2 bg-transparent border border-gray-500 text-gray-500 rounded-full shadow-md hover:bg-gray-500 hover:text-white transition-all mr-4"
               >
                 Cancel
               </button>
-              <button
+              <motion.button
                 onClick={handleDelete}
-                className="px-4 py-2 bg-transparent border border-red-500 text-red-500 rounded-full shadow hover:bg-red-500 hover:text-white transition-all"
+                className="px-4 py-2 bg-transparent border border-red-500 text-red-500 rounded-full shadow-md hover:bg-red-500 hover:text-white transition-all"
+                whileHover={{ scale: 1.1 }}
               >
                 Confirm
-              </button>
+              </motion.button>
             </div>
           </div>
         </div>

@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure--*vkdo802j9*i0zvo9vrx@9y9nnuw=vkj)ev7xb!c&q0y(n*9!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -57,6 +57,11 @@ TEMPLATES = [
         },
     },
 ]
+
+ALLOWED_HOSTS = ["*"]
+
+MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 WSGI_APPLICATION = 'core_project.wsgi.application'
 
@@ -112,7 +117,10 @@ STATICFILES_DIRS = []
 
 # Static files settings for production (collectstatic)
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # Define the path where static files will be stored after running `collectstatic`
-STATICFILES_DIRS = [BASE_DIR / "static"]  # Add any additional directories for static files
+STATICFILES_DIRS = [
+    # Remove or correct the path if not needed
+    # os.path.join(BASE_DIR, 'static')
+]
 
 # Media files (for uploaded content)
 MEDIA_URL = '/media/'

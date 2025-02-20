@@ -6,11 +6,17 @@
     "start": "next start"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/material": "^6.4.4",
     "axios": "^0.21.4",
-    "next": "latest",
+    "framer-motion": "^12.4.3",
+    "next": "^15.1.7",
+    "next-auth": "^4.24.11",
     "next-seo": "^4.28.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.4.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.2.6",

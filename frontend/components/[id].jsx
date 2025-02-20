@@ -1,20 +1,32 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
-const PostDetails = () => {
-  const router = useRouter();
-  const { id } = router.query; // Get the post ID from the route
-  const [post, setPost] = useState(null);
+// This function is used to tell Next.js which paths to pre-render at build time
+export async function getStaticPaths() {
+  // Fetch all posts to get the dynamic IDs
+  const res = await fetch('http://127.0.0.1:8000/posts/api/posts/');
+  const posts = await res.json();
 
-  useEffect(() => {
-    if (id) {
-      fetch(`http://127.0.0.1:8000/posts/posts/${id}/`)
-        .then((res) => res.json())
-        .then((data) => setPost(data))
-        .catch((err) => alert('Error fetching post'));
-    }
-  }, [id]);
+  // Generate a list of paths for each post
+  const paths = posts.map((post) => ({
+    params: { id: post.id.toString() }, // Ensure the id is a string
+  }));
 
+  // Return the paths and set fallback to false (other paths will 404)
+  return { paths, fallback: false };
+}
+
+// This function fetches data for each individual post
+export async function getStaticProps({ params }) {
+  const res = await fetch(`http://127.0.0.1:8000/posts/api/posts/${params.id}/`);
+  const post = await res.json();
+
+  // Return the post data as props to the component
+  return { props: { post } };
+}
+
+const PostDetails = ({ post }) => {
+  // If post is not available (fallback), show a loading message
   if (!post) return <p>Loading...</p>;
 
   return (

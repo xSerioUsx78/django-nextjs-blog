@@ -1,7 +1,12 @@
 body {
-    @apply bg-gray-800 text-gray-300
+    background-color: #ffff; /* bg-slate-200 */
+    color: #385a66; /* text-gray-500 */
 }
 
 #main {
     min-height: 78vh;
+}
+
+html {
+    scroll-behavior: smooth;
 }

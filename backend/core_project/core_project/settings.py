@@ -1,19 +1,23 @@
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--*vkdo802j9*i0zvo9vrx@9y9nnuw=vkj)ev7xb!c&q0y(n*9!'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure--*vkdo802j9*i0zvo9vrx@9y9nnuw=vkj)ev7xb!c&q0y(n*9!')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -65,7 +69,6 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 WSGI_APPLICATION = 'core_project.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -75,7 +78,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -95,7 +97,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -107,33 +108,24 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = []
 
-
 # Static files settings for production (collectstatic)
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # Define the path where static files will be stored after running `collectstatic`
-STATICFILES_DIRS = [
-    # Remove or correct the path if not needed
-    # os.path.join(BASE_DIR, 'static')
-]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Media files (for uploaded content)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'  # Path to store uploaded media files
-
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # Allows all origins, adjust as needed for production
-# Optional: You can customize it further by defining allowed origins
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://localhost:19006"  # For react native expo localhost
 ]
 
 # Default primary key field type

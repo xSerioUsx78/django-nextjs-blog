@@ -26,8 +26,10 @@ export async function getStaticProps({ params }) {
 }
 
 const PostDetails = ({ post }) => {
+  const router = useRouter();
+
   // If post is not available (fallback), show a loading message
-  if (!post) return <p>Loading...</p>;
+  if (router.isFallback) return <p>Loading...</p>;
 
   return (
     <div className="max-w-4xl mx-auto p-6">

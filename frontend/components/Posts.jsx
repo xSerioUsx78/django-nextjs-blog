@@ -144,11 +144,10 @@ const Posts = () => {
             </p>
             <div className="flex justify-between items-center">
               <motion.button
-                onClick={() => router.push(`/posts/${post.id}/`)}
-                className="px-4 py-2 bg-transparent border border-blue-500  rounded-md shadow-sm hover:shandow-md  transition-all"
-                
+                onClick={() => router.push(`/posts/${post.id}`)}
+                className="px-4 py-2 bg-transparent border border-blue-500 rounded-md shadow-sm hover:shadow-md transition-all"
               >
-                View 
+                View <FaEye className="inline-block ml-2" />
               </motion.button>
               <motion.button
                 onClick={() => {

@@ -20,7 +20,7 @@ const NavBar = () => {
                   router.pathname === "/" ? "text-blue-400" : "text-gray-400"
                 }`}
               >
-                Home
+                Home 
               </span>
             </Link>
             <Link href="/about">
@@ -29,7 +29,7 @@ const NavBar = () => {
                   router.pathname === "/about" ? "text-blue-400" : "text-gray-400"
                 }`}
               >
-                About
+                About Us
               </span>
             </Link>
           </div>

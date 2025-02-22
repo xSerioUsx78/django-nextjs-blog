@@ -1,35 +1,23 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
-// This function is used to tell Next.js which paths to pre-render at build time
-export async function getStaticPaths() {
-  // Fetch all posts to get the dynamic IDs
-  const res = await fetch('http://127.0.0.1:8000/posts/api/posts/');
-  const posts = await res.json();
-
-  // Generate a list of paths for each post
-  const paths = posts.map((post) => ({
-    params: { id: post.id.toString() }, // Ensure the id is a string
-  }));
-
-  // Return the paths and set fallback to false (other paths will 404)
-  return { paths, fallback: false };
-}
-
-// This function fetches data for each individual post
-export async function getStaticProps({ params }) {
-  const res = await fetch(`http://127.0.0.1:8000/posts/api/posts/${params.id}/`);
-  const post = await res.json();
-
-  // Return the post data as props to the component
-  return { props: { post } };
-}
+const BASE_URL = 'http://127.0.0.1:8000/posts/api/posts/';
 
 const PostDetails = ({ post }) => {
   const router = useRouter();
 
-  // If post is not available (fallback), show a loading message
-  if (router.isFallback) return <p>Loading...</p>;
+  // Debug: Log post data when component loads
+  useEffect(() => {
+    console.log("Post Data in Component:", post);
+  }, [post]);
+
+  if (router.isFallback) {
+    return <p className="text-center text-gray-500">Loading post...</p>;
+  }
+
+  if (!post) {
+    return <p className="text-center text-red-500">Post not found</p>;
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -44,5 +32,44 @@ const PostDetails = ({ post }) => {
     </div>
   );
 };
+
+// Fetch Data for Each Post
+export async function getStaticProps({ params }) {
+  try {
+    console.log("Fetching post for ID:", params.id); // Debugging
+
+    const res = await fetch(`${BASE_URL}${params.id}/`);
+    
+    if (!res.ok) {
+      console.error("Failed to fetch post:", res.status);
+      return { notFound: true };
+    }
+
+    const post = await res.json();
+    console.log("Fetched post:", post); // Debugging
+
+    return { props: { post }, revalidate: 10 };
+  } catch (error) {
+    console.error("Error fetching post:", error);
+    return { notFound: true };
+  }
+}
+
+// Generate Paths for Dynamic Routes
+export async function getStaticPaths() {
+  try {
+    const res = await fetch(BASE_URL);
+    const posts = await res.json();
+
+    const paths = posts.map((post) => ({
+      params: { id: post.id.toString() },
+    }));
+
+    return { paths, fallback: false };
+  } catch (error) {
+    console.error("Error fetching paths:", error);
+    return { paths: [], fallback: false };
+  }
+}
 
 export default PostDetails;

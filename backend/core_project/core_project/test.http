@@ -1,4 +1,4 @@
-GET    http://127.0.0.1:8000/posts/api/posts/
+POST    http://127.0.0.1:8000/posts/api/posts/
 Content-Type: application/json
 
 {

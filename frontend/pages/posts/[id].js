@@ -1,50 +1,83 @@
-import PostDetail from "../../components/[id]";  // Adjusted path for PostDetail
-import axios from "../../utils/axios";  // Adjusted axios path
-import requests from "../../utils/requests";  // Adjusted requests path
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
+import { CircularProgress } from '@mui/material';
 
-const Post = ({ post }) => {
+const BASE_URL = 'http://127.0.0.1:8000/posts/api/posts/';
+
+const PostDetails = ({ post }) => {
+  const router = useRouter();
+
+  // Log post data in console
+  useEffect(() => {
+    console.log("Fetched Post Data:", post);
+  }, [post]);
+
+  // Show loading spinner while waiting for data
+  if (router.isFallback) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <CircularProgress color="primary" size={80} />
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-center text-red-500 text-lg">Post not found</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto px-4 py-6">
-      {/* Check if the post exists */}
-      {post ? (
-        // Render the post details if the post exists
-        <PostDetail post={post} />
-      ) : (
-        // Show an error message if the post doesn't exist
-        <div className="text-center text-gray-500">
-          <p>Post not found or an error occurred.</p>
-          <button
-            onClick={() => window.history.back()}  // Go back to the previous page
-            className="px-6 py-2 bg-transparent border border-green-500 text-gray-800 rounded-full shadow hover:bg-gray-500 hover:text-white transition-all"
-          >
-            Go Back
-          </button>
-        </div>
-      )}
+    <div className="flex justify-center items-center h-screen">
+      <div className="max-w-3xl w-full p-8 bg-white shadow-lg rounded-lg text-center">
+        <h1 className="text-5xl font-extrabold text-indigo-600 mb-6">{post.title}</h1>
+        <p className="text-gray-700 text-lg leading-relaxed">{post.content}</p>
+        <button
+          onClick={() => router.back()}
+          className="mt-6 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-700 transition-all"
+        >
+          Go Back
+        </button>
+      </div>
     </div>
   );
 };
 
-// Fetch post data on the server-side (before rendering the page)
-export const getServerSideProps = async (context) => {
-  const { id } = context.params;  // Extract the ID from the URL params
-  let post = null;
-
+// Fetch data for individual post
+export async function getStaticProps({ params }) {
   try {
-    // Make the request to fetch the post by ID
-    const res = await axios.get(requests.fetchPost(id));
-    post = res.data;  // Store the fetched post data
+    console.log("Fetching post for ID:", params.id);
+    const res = await fetch(`${BASE_URL}${params.id}/`);
+    
+    if (!res.ok) {
+      console.error("Failed to fetch post:", res.status);
+      return { notFound: true };
+    }
+
+    const post = await res.json();
+    console.log("Post Data:", post);
+
+    return { props: { post }, revalidate: 10 };
   } catch (error) {
-    // Log any errors to the console
-    console.error("Error fetching the post:", error);
+    console.error("Error fetching post:", error);
+    return { notFound: true };
   }
+}
 
-  // Return the post data as a prop to the component
-  return {
-    props: {
-      post,  // Pass the post data or null if not found
-    },
-  };
-};
+// Generate dynamic paths for pre-rendering
+export async function getStaticPaths() {
+  try {
+    const res = await fetch(BASE_URL);
+    const posts = await res.json();
 
-export default Post;
+    const paths = posts.map((post) => ({ params: { id: post.id.toString() } }));
+    return { paths, fallback: true };
+  } catch (error) {
+    console.error("Error fetching paths:", error);
+    return { paths: [], fallback: true };
+  }
+}
+
+export default PostDetails;

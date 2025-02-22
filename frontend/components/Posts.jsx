@@ -16,11 +16,12 @@ const Posts = () => {
   const postsPerPage = 10;
 
   const router = useRouter();
+  const API_URL = "http://127.0.0.1:8000/posts/api/posts/"
 
   useEffect(() => {
     // Fetch all posts initially using Axios
     axios
-      .get('http://127.0.0.1:8000/posts/api/posts/')
+      .get(API_URL)
       .then((response) => setPosts(response.data))
       .catch((err) => alert('Error fetching posts'));
 
@@ -32,7 +33,7 @@ const Posts = () => {
 
   const fetchSinglePost = async (id) => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/posts/api/posts/${id}/`);
+      const response = await axios.get(`${API_URL}${id}/`);
       setSinglePost(response.data);
     } catch (err) {
       alert('Error fetching single post');
@@ -47,7 +48,7 @@ const Posts = () => {
 
     setIsLoading(true);
     try {
-      const response = await axios.post('http://127.0.0.1:8000/posts/api/posts/', newPost, {
+      const response = await axios.post(API_URL, newPost, {
         headers: { 'Content-Type': 'application/json' },
       });
       setPosts([response.data, ...posts]);
@@ -63,7 +64,7 @@ const Posts = () => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`http://127.0.0.1:8000/posts/api/posts/${postToDelete}/`);
+      await axios.delete(`${API_URL}${postToDelete}/`);
       setPosts(posts.filter((post) => post.id !== postToDelete));
       setPostToDelete(null);
       setShowDeleteModal(false);
@@ -143,11 +144,10 @@ const Posts = () => {
             </p>
             <div className="flex justify-between items-center">
               <motion.button
-                onClick={() => router.push(`/posts/${post.id}/`)}
-                className="px-4 py-2 bg-transparent border border-blue-500  rounded-md shadow-sm hover:shandow-md  transition-all"
-                
+                onClick={() => router.push(`/posts/${post.id}`)}
+                className="px-4 py-2 bg-transparent border border-blue-500 rounded-md shadow-sm hover:shadow-md transition-all"
               >
-                View 
+                View <FaEye className="inline-block ml-2" />
               </motion.button>
               <motion.button
                 onClick={() => {

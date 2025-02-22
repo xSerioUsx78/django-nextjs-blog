@@ -14,7 +14,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "backend/core_project/wsgi.py"
+      "dest": "https://your-backend-app.herokuapp.com/api/$1"
     },
     {
       "src": "/(.*)",
